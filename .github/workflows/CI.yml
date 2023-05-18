@@ -86,7 +86,7 @@ jobs:
       - name: Create release
         if: |
           matrix.config.runs-on == 'windows-2019' &&
-          github.repository == 'xenia-canary/xenia-canary' &&
+          github.repository == 'pexcn/xenia-canary-ac6' &&
           github.event.action != 'pull_request' &&
           contains(github.ref, 'refs/heads/canary') &&
           github.ref != 'refs/heads/canary_base'
