@@ -117,7 +117,7 @@ bool XThread::IsInThread(XThread* other) {
 XThread* XThread::GetCurrentThread() {
   XThread* thread = reinterpret_cast<XThread*>(current_xthread_tls_);
   if (!thread) {
-    assert_always("Attempting to use kernel stuff from a non-kernel thread");
+    assert_always("Attempting to use guest stuff from a non-guest thread.");
   }
   return thread;
 }
@@ -199,6 +199,7 @@ void XThread::InitializeGuestObject() {
   xe::store_and_swap<uint16_t>(p + 0x056, 1);
   xe::store_and_swap<uint32_t>(p + 0x05C, stack_base_);
   xe::store_and_swap<uint32_t>(p + 0x060, stack_limit_);
+  xe::store_and_swap<uint32_t>(p + 0x064, stack_base_ - kThreadKernelStackSize);
   xe::store_and_swap<uint32_t>(p + 0x068, tls_static_address_);
   xe::store_and_swap<uint8_t>(p + 0x06C, 0);
   xe::store_and_swap<uint32_t>(p + 0x074, guest_object() + 0x074);
