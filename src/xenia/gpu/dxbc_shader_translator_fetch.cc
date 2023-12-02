@@ -19,6 +19,12 @@
 #include "xenia/gpu/dxbc_shader_translator.h"
 #include "xenia/gpu/render_target_cache.h"
 
+DEFINE_bool(
+    ac6_ground_fix, false,
+    "This fixes(hide) issues with black ground in AC6. Use only in AC6. "
+    "Might cause issues in other titles.",
+    "HACKS");
+
 namespace xe {
 namespace gpu {
 using namespace ucode;
@@ -81,8 +87,19 @@ void DxbcShaderTranslator::ProcessVertexFetchInstruction(
         dxbc::Src index_operand(
             LoadOperand(instr.operands[0], 0b0001, index_operand_temp_pushed)
                 .SelectFromSwizzled(0));
-        a_.OpAdd(address_dest, index_operand, dxbc::Src::LF(0.005f));
-        a_.OpRoundNI(address_dest, address_src);
+        if (instr.attributes.is_index_rounded) {
+          a_.OpAdd(address_dest, index_operand, dxbc::Src::LF(0.5f));
+          a_.OpRoundNI(address_dest, address_src);
+        } else {
+          // UGLY HACK. Remove ASAP.
+          // Proper fix requires accurate RCP implementation.
+          if (cvars::ac6_ground_fix) {
+            a_.OpAdd(address_dest, index_operand, dxbc::Src::LF(0.00025f));
+            a_.OpRoundNI(address_dest, address_src);
+          } else {
+            a_.OpRoundNI(address_dest, index_operand);
+          }
+        }
         if (index_operand_temp_pushed) {
           PopSystemTemp();
         }
